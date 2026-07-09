@@ -15,7 +15,7 @@ from pr_agent.algo.pr_processing import (add_ai_metadata_to_diff_files,
 from pr_agent.algo.skills_loader import get_skills_context
 from pr_agent.algo.repo_context import build_repo_context
 from pr_agent.algo.token_handler import TokenHandler
-from pr_agent.algo.utils import (ModelType, PRReviewHeader,
+from pr_agent.algo.utils import (ModelType,
                                  convert_to_markdown_v2, github_action_output,
                                  load_yaml, show_relevant_configurations)
 from pr_agent.config_loader import get_settings
@@ -184,7 +184,7 @@ class PRReviewer:
             if get_settings().pr_reviewer.persistent_comment and not self.incremental.is_incremental:
                 final_update_message = get_settings().pr_reviewer.final_update_message
                 self.git_provider.publish_persistent_comment(pr_review,
-                                                            initial_header=f"{PRReviewHeader.REGULAR.value} 🔍",
+                                                            initial_header=f"{get_settings().output_labels.pr_review_header_regular} 🔍",
                                                             update_header=True,
                                                             final_update_message=final_update_message, )
             else:
@@ -195,7 +195,7 @@ class PRReviewer:
             get_logger().error(f"Failed to review PR: {e}")
 
     def _should_publish_review_no_suggestions(self, pr_review: str) -> bool:
-        return get_settings().pr_reviewer.get('publish_output_no_suggestions', True) or "No major issues detected" not in pr_review
+        return get_settings().pr_reviewer.get('publish_output_no_suggestions', True) or get_settings().output_labels.no_major_issues not in pr_review
 
     async def _prepare_prediction(self, model: str) -> None:
         self.patches_diff = get_pr_diff(self.git_provider,

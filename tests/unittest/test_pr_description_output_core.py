@@ -69,6 +69,9 @@ def _settings(
     pd.get.side_effect = lambda key, default=None: {
         "file_table_collapsible_open_by_default": file_table_collapsible_open_by_default,
     }.get(key, default)
+    ol = settings.output_labels
+    ol.pr_description_header_diagram_walkthrough = PRDescriptionHeader.DIAGRAM_WALKTHROUGH.value
+    ol.pr_description_header_file_walkthrough = PRDescriptionHeader.FILE_WALKTHROUGH.value
     return settings
 
 

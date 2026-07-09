@@ -20,7 +20,7 @@ from ..algo.file_filter import filter_ignored
 from ..algo.git_patch_processing import extract_hunk_headers
 from ..algo.language_handler import is_valid_file
 from ..algo.types import EDIT_TYPE
-from ..algo.utils import (PRReviewHeader, Range, clip_tokens,
+from ..algo.utils import (Range, clip_tokens,
                           find_line_number_of_relevant_line_in_file,
                           load_large_diff, set_file_languages)
 from ..config_loader import get_settings
@@ -201,9 +201,9 @@ class GithubProvider(GitProvider):
             self.comments = list(self.pr.get_issue_comments())
         prefixes = []
         if full:
-            prefixes.append(PRReviewHeader.REGULAR.value)
+            prefixes.append(get_settings().output_labels.pr_review_header_regular)
         if incremental:
-            prefixes.append(PRReviewHeader.INCREMENTAL.value)
+            prefixes.append(get_settings().output_labels.pr_review_header_incremental)
         for index in range(len(self.comments) - 1, -1, -1):
             if any(self.comments[index].body.startswith(prefix) for prefix in prefixes):
                 return self.comments[index]

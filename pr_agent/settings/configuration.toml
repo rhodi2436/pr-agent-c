@@ -404,3 +404,39 @@ pr_commands = [
     "/review",
     "/improve",
 ]
+
+[output_labels]
+# UI display strings for PR output. Override in .pr_agent.toml to localize, e.g.:
+#   [output_labels]
+#   pr_review_header_regular = "## PR 审查指南"
+#   no_major_issues = "未发现重大问题"
+# Note: pr_review_header_* and pr_description_header_* are also used as search
+# anchors when updating existing review comments. Changing them means old comments
+# (written with the previous label) will no longer be found for in-place update.
+pr_review_header_regular = "## PR Reviewer Guide"
+pr_review_header_incremental = "## Incremental PR Reviewer Guide"
+intro_text = "Here are some key observations to aid the review process:"
+estimated_effort_to_review = "Estimated effort to review"
+no_relevant_tests = "No relevant tests"
+pr_contains_tests = "PR contains tests"
+no_security_concerns = "No security concerns identified"
+security_concerns = "Security concerns"
+no_todo_sections = "No TODO sections"
+todo_sections = "TODO sections"
+no_major_issues = "No major issues detected"
+recommended_focus_areas = "Recommended focus areas for review"
+contribution_time_estimate = "Contribution time estimate"
+ticket_compliance_analysis = "Ticket compliance analysis"
+ticket_fully_compliant = "Fully compliant"
+ticket_pr_code_verified = "PR Code Verified"
+ticket_partially_compliant = "Partially compliant"
+ticket_not_compliant = "Not compliant"
+ticket_compliant_requirements = "Compliant requirements:"
+ticket_non_compliant_requirements = "Non-compliant requirements:"
+ticket_requires_human_verification = "Requires further human verification:"
+multiple_pr_themes = "Multiple PR themes"
+no_multiple_pr_themes = "No multiple PR themes"
+sub_pr_theme = "Sub-PR theme:"
+relevant_files = "Relevant files:"
+pr_description_header_diagram_walkthrough = "Diagram Walkthrough"
+pr_description_header_file_walkthrough = "File Walkthrough"

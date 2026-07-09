@@ -154,17 +154,18 @@ def convert_to_markdown_v2(output_data: dict,
         "Contribution time cost estimate": "⏳",
         "Ticket compliance check": "🎫",
     }
+    labels = get_settings().output_labels
     markdown_text = ""
     if not incremental_review:
-        markdown_text += f"{PRReviewHeader.REGULAR.value} 🔍\n\n"
+        markdown_text += f"{labels.pr_review_header_regular} 🔍\n\n"
     else:
-        markdown_text += f"{PRReviewHeader.INCREMENTAL.value} 🔍\n\n"
+        markdown_text += f"{labels.pr_review_header_incremental} 🔍\n\n"
         markdown_text += f"⏮️ Review for commits since previous PR-Agent review {incremental_review}.\n\n"
     if not output_data or not output_data.get('review', {}):
         return ""
 
     if get_settings().get("pr_reviewer.enable_intro_text", False):
-        markdown_text += f"Here are some key observations to aid the review process:\n\n"
+        markdown_text += f"{labels.intro_text}\n\n"
 
     if gfm_supported:
         markdown_text += "<table>\n"
@@ -177,7 +178,7 @@ def convert_to_markdown_v2(output_data: dict,
         key_nice = key.replace('_', ' ').capitalize()
         emoji = emojis.get(key_nice, "")
         if 'Estimated effort to review' in key_nice:
-            key_nice = 'Estimated effort to review'
+            key_nice = labels.estimated_effort_to_review
             value = str(value).strip()
             if value.isnumeric():
                 value_int = int(value)
@@ -200,58 +201,58 @@ def convert_to_markdown_v2(output_data: dict,
             if gfm_supported:
                 markdown_text += f"<tr><td>"
                 if is_value_no(value):
-                    markdown_text += f"{emoji}&nbsp;<strong>No relevant tests</strong>"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.no_relevant_tests}</strong>"
                 else:
-                    markdown_text += f"{emoji}&nbsp;<strong>PR contains tests</strong>"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.pr_contains_tests}</strong>"
                 markdown_text += f"</td></tr>\n"
             else:
                 if is_value_no(value):
-                    markdown_text += f'### {emoji} No relevant tests\n\n'
+                    markdown_text += f'### {emoji} {labels.no_relevant_tests}\n\n'
                 else:
-                    markdown_text += f"### {emoji} PR contains tests\n\n"
+                    markdown_text += f"### {emoji} {labels.pr_contains_tests}\n\n"
         elif 'ticket compliance check' in key_nice.lower():
             markdown_text = ticket_markdown_logic(emoji, markdown_text, value, gfm_supported)
         elif 'contribution time cost estimate' in key_nice.lower():
             if gfm_supported:
-                markdown_text += f"<tr><td>{emoji}&nbsp;<strong>Contribution time estimate</strong> (best, average, worst case): "
+                markdown_text += f"<tr><td>{emoji}&nbsp;<strong>{labels.contribution_time_estimate}</strong> (best, average, worst case): "
                 markdown_text += f"{value['best_case'].replace('m', ' minutes')} | {value['average_case'].replace('m', ' minutes')} | {value['worst_case'].replace('m', ' minutes')}"
                 markdown_text += f"</td></tr>\n"
             else:
-                markdown_text += f"### {emoji} Contribution time estimate (best, average, worst case): "
+                markdown_text += f"### {emoji} {labels.contribution_time_estimate} (best, average, worst case): "
                 markdown_text += f"{value['best_case'].replace('m', ' minutes')} | {value['average_case'].replace('m', ' minutes')} | {value['worst_case'].replace('m', ' minutes')}\n\n"
         elif 'security concerns' in key_nice.lower():
             if gfm_supported:
                 markdown_text += f"<tr><td>"
                 if is_value_no(value):
-                    markdown_text += f"{emoji}&nbsp;<strong>No security concerns identified</strong>"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.no_security_concerns}</strong>"
                 else:
-                    markdown_text += f"{emoji}&nbsp;<strong>Security concerns</strong><br><br>\n\n"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.security_concerns}</strong><br><br>\n\n"
                     value = emphasize_header(value.strip())
                     markdown_text += f"{value}"
                 markdown_text += f"</td></tr>\n"
             else:
                 if is_value_no(value):
-                    markdown_text += f'### {emoji} No security concerns identified\n\n'
+                    markdown_text += f'### {emoji} {labels.no_security_concerns}\n\n'
                 else:
-                    markdown_text += f"### {emoji} Security concerns\n\n"
+                    markdown_text += f"### {emoji} {labels.security_concerns}\n\n"
                     value = emphasize_header(value.strip(), only_markdown=True)
                     markdown_text += f"{value}\n\n"
         elif 'todo sections' in key_nice.lower():
             if gfm_supported:
                 markdown_text += "<tr><td>"
                 if is_value_no(value):
-                    markdown_text += f"✅&nbsp;<strong>No TODO sections</strong>"
+                    markdown_text += f"✅&nbsp;<strong>{labels.no_todo_sections}</strong>"
                 else:
                     markdown_todo_items = format_todo_items(value, git_provider, gfm_supported)
-                    markdown_text += f"{emoji}&nbsp;<strong>TODO sections</strong>\n<br><br>\n"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.todo_sections}</strong>\n<br><br>\n"
                     markdown_text += markdown_todo_items
                 markdown_text += "</td></tr>\n"
             else:
                 if is_value_no(value):
-                    markdown_text += f"### ✅ No TODO sections\n\n"
+                    markdown_text += f"### ✅ {labels.no_todo_sections}\n\n"
                 else:
                     markdown_todo_items = format_todo_items(value, git_provider, gfm_supported)
-                    markdown_text += f"### {emoji} TODO sections\n\n"
+                    markdown_text += f"### {emoji} {labels.todo_sections}\n\n"
                     markdown_text += markdown_todo_items
         elif 'can be split' in key_nice.lower():
             if gfm_supported:
@@ -263,18 +264,18 @@ def convert_to_markdown_v2(output_data: dict,
             if is_value_no(value):
                 if gfm_supported:
                     markdown_text += f"<tr><td>"
-                    markdown_text += f"{emoji}&nbsp;<strong>No major issues detected</strong>"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.no_major_issues}</strong>"
                     markdown_text += f"</td></tr>\n"
                 else:
-                    markdown_text += f"### {emoji} No major issues detected\n\n"
+                    markdown_text += f"### {emoji} {labels.no_major_issues}\n\n"
             else:
                 issues = value
                 if gfm_supported:
                     markdown_text += f"<tr><td>"
                     # markdown_text += f"{emoji}&nbsp;<strong>{key_nice}</strong><br><br>\n\n"
-                    markdown_text += f"{emoji}&nbsp;<strong>Recommended focus areas for review</strong><br><br>\n\n"
+                    markdown_text += f"{emoji}&nbsp;<strong>{labels.recommended_focus_areas}</strong><br><br>\n\n"
                 else:
-                    markdown_text += f"### {emoji} Recommended focus areas for review\n\n#### \n"
+                    markdown_text += f"### {emoji} {labels.recommended_focus_areas}\n\n#### \n"
                 for i, issue in enumerate(issues):
                     try:
                         if not issue or not isinstance(issue, dict):
@@ -366,6 +367,7 @@ def extract_relevant_lines_str(end_line, files, relevant_file, start_line, deden
 
 
 def ticket_markdown_logic(emoji, markdown_text, value, gfm_supported) -> str:
+    labels = get_settings().output_labels
     ticket_compliance_str = ""
     compliance_emoji = ''
     # Track compliance levels across all tickets
@@ -390,14 +392,14 @@ def ticket_markdown_logic(emoji, markdown_text, value, gfm_supported) -> str:
                 # Calculate individual ticket compliance level
                 if fully_compliant_str:
                     if not_compliant_str:
-                        ticket_compliance_level = 'Partially compliant'
+                        ticket_compliance_level = labels.ticket_partially_compliant
                     else:
                         if not requires_further_human_verification:
-                            ticket_compliance_level = 'Fully compliant'
+                            ticket_compliance_level = labels.ticket_fully_compliant
                         else:
-                            ticket_compliance_level = 'PR Code Verified'
+                            ticket_compliance_level = labels.ticket_pr_code_verified
                 elif not_compliant_str:
-                    ticket_compliance_level = 'Not compliant'
+                    ticket_compliance_level = labels.ticket_not_compliant
 
                 # Store the compliance level for aggregation
                 if ticket_compliance_level:
@@ -405,11 +407,11 @@ def ticket_markdown_logic(emoji, markdown_text, value, gfm_supported) -> str:
 
                 # build compliance string
                 if fully_compliant_str:
-                    explanation += f"Compliant requirements:\n\n{fully_compliant_str}\n\n"
+                    explanation += f"{labels.ticket_compliant_requirements}\n\n{fully_compliant_str}\n\n"
                 if not_compliant_str:
-                    explanation += f"Non-compliant requirements:\n\n{not_compliant_str}\n\n"
+                    explanation += f"{labels.ticket_non_compliant_requirements}\n\n{not_compliant_str}\n\n"
                 if requires_further_human_verification:
-                    explanation += f"Requires further human verification:\n\n{requires_further_human_verification}\n\n"
+                    explanation += f"{labels.ticket_requires_human_verification}\n\n{requires_further_human_verification}\n\n"
                 ticket_compliance_str += f"\n\n**[{ticket_url.split('/')[-1]}]({ticket_url}) - {ticket_compliance_level}**\n\n{explanation}\n\n"
 
                 # for debugging
@@ -425,25 +427,25 @@ def ticket_markdown_logic(emoji, markdown_text, value, gfm_supported) -> str:
 
         # Calculate overall compliance level and emoji
         if all_compliance_levels:
-            if all(level == 'Fully compliant' for level in all_compliance_levels):
-                compliance_level = 'Fully compliant'
+            if all(level == labels.ticket_fully_compliant for level in all_compliance_levels):
+                compliance_level = labels.ticket_fully_compliant
                 compliance_emoji = '✅'
-            elif all(level == 'PR Code Verified' for level in all_compliance_levels):
-                compliance_level = 'PR Code Verified'
+            elif all(level == labels.ticket_pr_code_verified for level in all_compliance_levels):
+                compliance_level = labels.ticket_pr_code_verified
                 compliance_emoji = '✅'
-            elif any(level == 'Not compliant' for level in all_compliance_levels):
+            elif any(level == labels.ticket_not_compliant for level in all_compliance_levels):
                 # If there's a mix of compliant and non-compliant tickets
-                if any(level in ['Fully compliant', 'PR Code Verified'] for level in all_compliance_levels):
-                    compliance_level = 'Partially compliant'
+                if any(level in [labels.ticket_fully_compliant, labels.ticket_pr_code_verified] for level in all_compliance_levels):
+                    compliance_level = labels.ticket_partially_compliant
                     compliance_emoji = '🔶'
                 else:
-                    compliance_level = 'Not compliant'
+                    compliance_level = labels.ticket_not_compliant
                     compliance_emoji = '❌'
-            elif any(level == 'Partially compliant' for level in all_compliance_levels):
-                compliance_level = 'Partially compliant'
+            elif any(level == labels.ticket_partially_compliant for level in all_compliance_levels):
+                compliance_level = labels.ticket_partially_compliant
                 compliance_emoji = '🔶'
             else:
-                compliance_level = 'PR Code Verified'
+                compliance_level = labels.ticket_pr_code_verified
                 compliance_emoji = '✅'
 
             # Set extra statistics outside the ticket loop
@@ -452,11 +454,11 @@ def ticket_markdown_logic(emoji, markdown_text, value, gfm_supported) -> str:
         # editing table row for ticket compliance analysis
         if gfm_supported:
             markdown_text += f"<tr><td>\n\n"
-            markdown_text += f"**{emoji} Ticket compliance analysis {compliance_emoji}**\n\n"
+            markdown_text += f"**{emoji} {labels.ticket_compliance_analysis} {compliance_emoji}**\n\n"
             markdown_text += ticket_compliance_str
             markdown_text += f"</td></tr>\n"
         else:
-            markdown_text += f"### {emoji} Ticket compliance analysis {compliance_emoji}\n\n"
+            markdown_text += f"### {emoji} {labels.ticket_compliance_analysis} {compliance_emoji}\n\n"
             markdown_text += ticket_compliance_str + "\n\n"
 
     return markdown_text
@@ -464,21 +466,21 @@ def ticket_markdown_logic(emoji, markdown_text, value, gfm_supported) -> str:
 
 def process_can_be_split(emoji, value):
     try:
-        # key_nice = "Can this PR be split?"
-        key_nice = "Multiple PR themes"
+        labels = get_settings().output_labels
+        key_nice = labels.multiple_pr_themes
         markdown_text = ""
         if not value or isinstance(value, list) and len(value) == 1:
             value = "No"
             # markdown_text += f"<tr><td> {emoji}&nbsp;<strong>{key_nice}</strong></td><td>\n\n{value}\n\n</td></tr>\n"
             # markdown_text += f"### {emoji} No multiple PR themes\n\n"
-            markdown_text += f"{emoji} <strong>No multiple PR themes</strong>\n\n"
+            markdown_text += f"{emoji} <strong>{labels.no_multiple_pr_themes}</strong>\n\n"
         else:
             markdown_text += f"{emoji} <strong>{key_nice}</strong><br><br>\n\n"
             for i, split in enumerate(value):
                 title = split.get('title', '')
                 relevant_files = split.get('relevant_files', [])
-                markdown_text += f"<details><summary>\nSub-PR theme: <b>{title}</b></summary>\n\n"
-                markdown_text += f"___\n\nRelevant files:\n\n"
+                markdown_text += f"<details><summary>\n{labels.sub_pr_theme} <b>{title}</b></summary>\n\n"
+                markdown_text += f"___\n\n{labels.relevant_files}\n\n"
                 for file in relevant_files:
                     markdown_text += f"- {file}\n"
                 markdown_text += f"___\n\n"
@@ -1328,20 +1330,21 @@ def process_description(description_full: str) -> Tuple[str, List]:
     if not description_full:
         return "", []
 
-    # description_split = description_full.split(PRDescriptionHeader.FILE_WALKTHROUGH.value)
-    if PRDescriptionHeader.FILE_WALKTHROUGH.value in description_full:
+    file_walkthrough_label = get_settings().output_labels.pr_description_header_file_walkthrough
+    # description_split = description_full.split(file_walkthrough_label)
+    if file_walkthrough_label in description_full:
         try:
             # FILE_WALKTHROUGH are presented in a collapsible section in the description
-            regex_pattern = r'<details.*?>\s*<summary>\s*<h3>\s*' + re.escape(PRDescriptionHeader.FILE_WALKTHROUGH.value) + r'\s*</h3>\s*</summary>'
+            regex_pattern = r'<details.*?>\s*<summary>\s*<h3>\s*' + re.escape(file_walkthrough_label) + r'\s*</h3>\s*</summary>'
             description_split = re.split(regex_pattern, description_full, maxsplit=1, flags=re.DOTALL)
 
             # If the regex pattern is not found, fallback to the previous method
             if len(description_split) == 1:
                 get_logger().debug("Could not find regex pattern for file walkthrough, falling back to simple split")
-                description_split = description_full.split(PRDescriptionHeader.FILE_WALKTHROUGH.value, 1)
+                description_split = description_full.split(file_walkthrough_label, 1)
         except Exception as e:
             get_logger().warning(f"Failed to split description using regex, falling back to simple split: {e}")
-            description_split = description_full.split(PRDescriptionHeader.FILE_WALKTHROUGH.value, 1)
+            description_split = description_full.split(file_walkthrough_label, 1)
 
         if len(description_split) < 2:
             get_logger().error("Failed to split description into base and changes walkthrough", artifact={'description': description_full})
